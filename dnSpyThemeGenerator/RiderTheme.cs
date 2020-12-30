@@ -49,12 +49,16 @@ namespace dnSpyThemeGenerator
                             foreach (var attributeOption in xElement.Nodes().Cast<XElement>())
                             {
                                 var attributeName = attributeOption.Attribute("name").Value;
-                                theme._attributes[attributeName] = ParseAttributeOption(attributeOption);
+                                var parsed = ParseAttributeOption(attributeOption);
+                                if (parsed is not null)
+                                    theme._attributes[attributeName] = parsed;
                             }
 
                             break;
                         }
-                        default: throw new Exception("Unexpected attribute name: " + xElement.Name);
+                        default:
+                            // throw new Exception("Unexpected attribute name: " + xElement.Name);
+                            break;
                     }
                 }
             }
@@ -70,9 +74,10 @@ namespace dnSpyThemeGenerator
                 var newElement = attributeOption.Parent
                     .Nodes()
                     .OfType<XElement>()
-                    .Single(x => x.Attribute("name").Value == baseName);
+                    .SingleOrDefault(x => x.Attribute("name").Value == baseName);
 
-                return ParseAttributeOption(newElement);
+
+                return newElement is null ? null : ParseAttributeOption(newElement);
             }
 
             var attributeValue = (XElement) attributeOption.Nodes().Single();
@@ -96,7 +101,6 @@ namespace dnSpyThemeGenerator
             donor.Guid = new Guid(bytes);
             donor.Order = 9001;
 
-            // TODO: colors
             foreach ((string dnSpyColor, var dnSpyAttributes) in donor.Colors)
             {
                 var riderColor = MapColorKey(dnSpyColor);
@@ -113,11 +117,16 @@ namespace dnSpyThemeGenerator
                     {
                         if (dnSpyAttributeName != "name")
                             Debug.WriteLine("Skipping unknown attribute " + dnSpyAttributeName);
-                        continue;
                     }
-
-                    dnSpyAttributes[dnSpyAttributeName] = "#" + _attributes[riderColor][riderAttributeName];
-                    Console.WriteLine($"Mapping {dnSpyColor}.{dnSpyAttributeName}");
+                    else if (!_attributes.TryGetValue(riderColor, out var riderAttributes))
+                    {
+                        Debug.WriteLine("Couldn't resolve rider attribute " + dnSpyAttributeName);
+                    }
+                    else if (riderAttributes.TryGetValue(riderAttributeName, out var riderValue))
+                    {
+                        dnSpyAttributes[dnSpyAttributeName] = "#" + riderValue.PadLeft(6, '0');
+                        Console.WriteLine($"Mapping {dnSpyColor}.{dnSpyAttributeName}");
+                    }
                 }
             }
         }
