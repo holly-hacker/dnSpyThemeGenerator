@@ -49,27 +49,26 @@ namespace dnSpyThemeGenerator.Converters
             // TODO: ...
         };
 
-        private static readonly Dictionary<string, (string riderKey, string dnSpyAttribute)> ColorMap = new()
+        private static readonly Dictionary<(string key, string attribute), string> ColorMap = new()
         {
-            {"linenumber", ("LINE_NUMBERS_COLOR", "fg")},
-            {"selectedtext", ("SELECTION_BACKGROUND", "bg")},
-            {"inactiveselectedtext", ("SELECTION_BACKGROUND", "bg")},
-            // {"tooltipbackgroun(d", (, "bg")"TOLTIP"},
-            
-            {"environmentscrollbarthumbbackground", ("ScrollBar.thumbColor", "bg")},
-            {"environmentscrollbarthumbmouseoverbackground", ("ScrollBar.hoverThumbColor", "bg")},
-            {"environmentscrollbarbackground", ("ScrollBar.trackColor", "bg")},
-            {"environmentscrollbararrowbackground", ("ScrollBar.trackColor", "bg")},
-            {"environmentscrollbararrowdisabledbackground", ("ScrollBar.trackColor", "bg")},
+            {("linenumber", "fg"), "LINE_NUMBERS_COLOR"},
+            {("selectedtext", "bg"), "SELECTION_BACKGROUND"},
+            {("inactiveselectedtext", "bg"), "SELECTION_BACKGROUND"},
 
-            {"treeview", ("PROMOTION_PANE", "bg")},
-            {"glyphmargin", ("GUTTER_BACKGROUND", "bg")},
+            {("environmentscrollbarthumbbackground", "bg"), "ScrollBar.thumbColor"},
+            {("environmentscrollbarthumbmouseoverbackground", "bg"), "ScrollBar.hoverThumbColor"},
+            {("environmentscrollbarbackground", "bg"), "ScrollBar.trackColor"},
+            {("environmentscrollbararrowbackground", "bg"), "ScrollBar.trackColor"},
+            {("environmentscrollbararrowdisabledbackground", "bg"), "ScrollBar.trackColor"},
+
+            {("treeview", "bg"), "PROMOTION_PANE"},
+            {("glyphmargin", "bg"), "GUTTER_BACKGROUND"},
         };
 
-        private static readonly Dictionary<string, (string color, string attr)> HardcodedColors = new()
+        private static readonly Dictionary<(string key, string attribute), string> HardcodedColors = new()
         {
-            {"treeviewitemselected", ("#1FFFFFFF", "bg")},
-            {"treeviewitemmouseover", ("#3FFFFFFF", "bg")},
+            {("treeviewitemselected", "bg"), "#1FFFFFFF"},
+            {("treeviewitemmouseover", "bg"), "#3FFFFFFF"},
         };
 
         public void CopyTo(RiderTheme source, DnSpyTheme donor)
@@ -81,15 +80,15 @@ namespace dnSpyThemeGenerator.Converters
             donor.Guid = new Guid(bytes);
             donor.Order = 9001;
 
-            foreach ((string dnSpyColor, var dnSpyAttributes) in donor.Colors)
+            foreach ((string dnSpyColorName, var dnSpyAttributes) in donor.Colors)
             {
-                if (HardcodedColors.TryGetValue(dnSpyColor, out var result))
+                foreach ((string dnSpyAttributeName, _) in dnSpyAttributes)
                 {
-                    dnSpyAttributes[result.attr] = result.color;
-                }
-                else if (AttributeMap.TryGetValue(dnSpyColor, out string riderAttributeKey))
-                {
-                    foreach ((string dnSpyAttributeName, _) in dnSpyAttributes)
+                    if (HardcodedColors.TryGetValue((dnSpyColorName, dnSpyAttributeName), out var result))
+                    {
+                        dnSpyAttributes[dnSpyAttributeName] = result;
+                    }
+                    else if (AttributeMap.TryGetValue(dnSpyColorName, out string riderAttributeKey))
                     {
                         var riderAttributeName = MapAttributeName(dnSpyAttributeName);
                         if (riderAttributeName is null)
@@ -108,25 +107,25 @@ namespace dnSpyThemeGenerator.Converters
                         else
                         {
                             dnSpyAttributes[dnSpyAttributeName] = ConvertColor(riderValue);
-                            Console.WriteLine($"Mapping attribute {dnSpyColor}.{dnSpyAttributeName}");
+                            Console.WriteLine($"Mapping attribute {dnSpyColorName}.{dnSpyAttributeName}");
                         }
                     }
-                }
-                else if (ColorMap.TryGetValue(dnSpyColor, out var riderColorTuple))
-                {
-                    if (!source.Colors.TryGetValue(riderColorTuple.riderKey, out var riderColor))
+                    else if (ColorMap.TryGetValue((dnSpyColorName, dnSpyAttributeName), out var riderColorName))
                     {
-                        Debug.WriteLine($"couldn't find color {riderColor} in rider theme");
+                        if (!source.Colors.TryGetValue(riderColorName, out var riderColor))
+                        {
+                            Debug.WriteLine($"couldn't find color {riderColor} in rider theme");
+                        }
+                        else
+                        {
+                            dnSpyAttributes[dnSpyAttributeName] = ConvertColor(riderColor);
+                            Console.WriteLine($"Mapping color {dnSpyColorName}.{dnSpyAttributeName}");
+                        }
                     }
                     else
                     {
-                        dnSpyAttributes[riderColorTuple.dnSpyAttribute] = ConvertColor(riderColor);
-                        Console.WriteLine($"Mapping color {dnSpyColor}.{riderColorTuple.dnSpyAttribute}");
+                        Debug.WriteLine("Skipping unknown key " + dnSpyColorName);
                     }
-                }
-                else
-                {
-                    Debug.WriteLine("Skipping unknown key " + dnSpyColor);
                 }
             }
 
