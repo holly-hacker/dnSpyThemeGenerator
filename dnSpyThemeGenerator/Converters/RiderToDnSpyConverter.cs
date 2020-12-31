@@ -1,103 +1,17 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
+using dnSpyThemeGenerator.Themes;
 
-namespace dnSpyThemeGenerator
+namespace dnSpyThemeGenerator.Converters
 {
-    public class RiderTheme
+    internal class RiderToDnSpyConverter : IThemeConverter<RiderTheme, DnSpyTheme>
     {
-        private string _name;
-        private readonly Dictionary<string, string> _colors = new();
-        private readonly Dictionary<string, Dictionary<string, string>> _attributes = new();
-
-        private RiderTheme()
+        public void CopyTo(RiderTheme source, DnSpyTheme donor)
         {
-        }
-
-        public static RiderTheme ReadFromStream(Stream stream)
-        {
-            var doc = XDocument.Load(stream);
-            var root = doc.Root;
-
-            var theme = new RiderTheme
-            {
-                _name = root.Attribute("name").Value
-            };
-
-            foreach (var xNode in root.Nodes())
-            {
-                if (xNode is XElement xElement)
-                {
-                    switch (xElement.Name.LocalName)
-                    {
-                        case "colors":
-                        {
-                            foreach (var option in xElement.Nodes().Cast<XElement>())
-                            {
-                                var name = option.Attribute("name").Value;
-                                var value = option.Attribute("value").Value;
-                                theme._colors[name] = value;
-                            }
-
-                            break;
-                        }
-                        case "attributes":
-                        {
-                            foreach (var attributeOption in xElement.Nodes().Cast<XElement>())
-                            {
-                                var attributeName = attributeOption.Attribute("name").Value;
-                                var parsed = ParseAttributeOption(attributeOption);
-                                if (parsed is not null)
-                                    theme._attributes[attributeName] = parsed;
-                            }
-
-                            break;
-                        }
-                        default:
-                            // throw new Exception("Unexpected attribute name: " + xElement.Name);
-                            break;
-                    }
-                }
-            }
-
-            return theme;
-        }
-
-        private static Dictionary<string, string> ParseAttributeOption(XElement attributeOption)
-        {
-            if (attributeOption.Attribute("baseAttributes") is { } baseAttr)
-            {
-                var baseName = baseAttr.Value;
-                var newElement = attributeOption.Parent
-                    .Nodes()
-                    .OfType<XElement>()
-                    .SingleOrDefault(x => x.Attribute("name").Value == baseName);
-
-
-                return newElement is null ? null : ParseAttributeOption(newElement);
-            }
-
-            var attributeValue = (XElement) attributeOption.Nodes().Single();
-            Dictionary<string, string> dic = new();
-            foreach (var option in attributeValue.Nodes().Cast<XElement>())
-            {
-                var name = option.Attribute("name").Value;
-                var value = option.Attribute("value").Value;
-                dic[name] = value;
-            }
-
-            return dic;
-        }
-
-        public void CopyTo(DnSpyTheme donor)
-        {
-            donor.Name = _name.ToLower().Replace(" ", "_");
-            donor.MenuName = _name;
+            donor.Name = source.Name.ToLower().Replace(" ", "_");
+            donor.MenuName = source.Name;
             var bytes = new byte[16];
-            new Random(_name.GetHashCode()).NextBytes(bytes);
+            new Random(source.Name.GetHashCode()).NextBytes(bytes);
             donor.Guid = new Guid(bytes);
             donor.Order = 9001;
 
@@ -118,7 +32,7 @@ namespace dnSpyThemeGenerator
                         if (dnSpyAttributeName != "name")
                             Debug.WriteLine("Skipping unknown attribute " + dnSpyAttributeName);
                     }
-                    else if (!_attributes.TryGetValue(riderColor, out var riderAttributes))
+                    else if (!source.Attributes.TryGetValue(riderColor, out var riderAttributes))
                     {
                         Debug.WriteLine("Couldn't resolve rider attribute " + dnSpyAttributeName);
                     }
@@ -166,6 +80,8 @@ namespace dnSpyThemeGenerator
                 "preprocessorkeyword" => "DEFAULT_KEYWORD",
                 // TODO: preprocessortext
                 "label" => "DEFAULT_LABEL",
+                "opcode" => "DEFAULT_KEYWORD",
+                // TODO: ...
                 _ => null,
             };
         }

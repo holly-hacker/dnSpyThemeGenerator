@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace dnSpyThemeGenerator
+namespace dnSpyThemeGenerator.Themes
 {
-    public class DnSpyTheme
+    internal class DnSpyTheme
     {
         public Guid Guid { get; set; }
         public string Name { get; set; }
