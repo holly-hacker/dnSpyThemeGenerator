@@ -63,12 +63,66 @@ namespace dnSpyThemeGenerator.Converters
 
             {("treeview", "bg"), "PROMOTION_PANE"},
             {("glyphmargin", "bg"), "GUTTER_BACKGROUND"},
+
+            // main background
+            {("environmentbackground", "fg"), "PROMOTION_PANE"},
+            {("environmentbackground", "bg"), "PROMOTION_PANE"},
+            {("environmentbackground", "color3"), "PROMOTION_PANE"},
+            {("environmentbackground", "color4"), "PROMOTION_PANE"},
+
+            // top toolbar
+            {("toolbarhorizontalbackground", "fg"), "PROMOTION_PANE"},
+            {("toolbarhorizontalbackground", "bg"), "PROMOTION_PANE"},
+            {("toolbarhorizontalbackground", "color3"), "PROMOTION_PANE"},
+
+            // top header
+            {("environmentmainwindowactivecaption", "bg"), "PROMOTION_PANE"},
+            {("environmentmainwindowinactivecaption", "bg"), "PROMOTION_PANE"},
+            
+            // tool window headers
+            {("environmenttitlebaractive", "bg"), "PROMOTION_PANE"},
+            {("environmenttitlebaractivegradient", "bg"), "PROMOTION_PANE"},
+            {("environmenttitlebaractivegradient", "fg"), "PROMOTION_PANE"},
+            {("environmenttitlebaractivegradient", "color3"), "PROMOTION_PANE"},
+            {("environmenttitlebaractivegradient", "color4"), "PROMOTION_PANE"},
+            {("environmenttitlebarinactive", "bg"), "PROMOTION_PANE"},
+            {("environmenttitlebarinactivegradient", "bg"), "PROMOTION_PANE"},
+            {("environmenttitlebarinactivegradient", "fg"), "PROMOTION_PANE"},
+            {("environmenttitlebarinactivegradient", "color3"), "PROMOTION_PANE"},
+            {("environmenttitlebarinactivegradient", "color4"), "PROMOTION_PANE"},
+            
+            // editor tabs
+            {("environmentfiletabbackground", "bg"), "PROMOTION_PANE"},
+            {("environmentfiletabinactivegradient", "bg"), "GUTTER_BACKGROUND"},
+            {("environmentfiletabinactivegradient", "fg"), "GUTTER_BACKGROUND"},
+            {("environmentfiletabinactiveborder", "bg"), "GUTTER_BACKGROUND"},
+            
+            // header for dialogs
+            {("dialogwindowactivecaption", "bg"), "PROMOTION_PANE"},
+            {("dialogwindowinactivecaption", "bg"), "PROMOTION_PANE"},
+            // could also style environmentfiletabselectedgradient, but which color?
+            
+            // dialogs
+            {("dialogwindow", "bg"), "PROMOTION_PANE"},
+            
+            // settings list background
+            {("appsettingstreeview", "bg"), "GUTTER_BACKGROUND"},
+            
+            // context menu
+            // {("contextmenubackground", "bg"), "PROMOTION_PANE"},
+            // {("contextmenurectanglefill", "bg"), "PROMOTION_PANE"},
+            
+            // some controls
+            // {("commoncontrolsbutton", "bg"), "GUTTER_BACKGROUND"},
+            // {("commoncontrolshover", "bg"), "GUTTER_BACKGROUND"},
         };
 
         private static readonly Dictionary<(string key, string attribute), string> HardcodedColors = new()
         {
             {("treeviewitemselected", "bg"), "#1FFFFFFF"},
             {("treeviewitemmouseover", "bg"), "#3FFFFFFF"},
+            
+            {("environmentfiletabborder", "bg"), "transparent"},
         };
 
         public void CopyTo(RiderTheme source, DnSpyTheme donor)
@@ -128,21 +182,6 @@ namespace dnSpyThemeGenerator.Converters
                     }
                 }
             }
-
-            /*
-            var bgColor = donor.Colors["defaulttext"]["bg"];
-            donor.Colors["dialogwindow"]["bg"] = bgColor;
-            donor.Colors["dialogwindowactivecaption"]["bg"] = bgColor;
-            donor.Colors["dialogwindowinactivecaption"]["bg"] = bgColor;
-            
-            donor.Colors["environmentbackground"]["fg"] = bgColor;
-            donor.Colors["environmentbackground"]["bg"] = bgColor;
-            donor.Colors["environmentbackground"]["color3"] = bgColor;
-            donor.Colors["environmentbackground"]["color4"] = bgColor;
-            
-            donor.Colors["environmentmainwindowactivecaption"]["bg"] = bgColor;
-            donor.Colors["environmentmainwindowinactivecaption"]["bg"] = bgColor;
-            */
         }
 
         private static string ConvertColor(string color)
